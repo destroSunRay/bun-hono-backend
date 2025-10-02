@@ -1,6 +1,6 @@
 import type { PgTableWithColumns } from 'drizzle-orm/pg-core';
 import z, { ZodObject } from 'zod';
-import { and, count, eq, isNull, getTableColumns } from 'drizzle-orm';
+import { and, count, eq, isNull, getTableColumns, Column } from 'drizzle-orm';
 
 import { db } from '@/db';
 import { OpenAPIRouteConfig } from './openapi-route-config';
@@ -39,6 +39,9 @@ export class CreateRouteControllers {
 
   // Public properties
   public router!: AppOpenAPI;
+  public get getSchemas() {
+    return this.schemas;
+  }
 
   constructor(
     entity: string,
@@ -262,6 +265,7 @@ export class CreateRouteControllers {
           HttpStatus.NOT_FOUND
         );
       }
+      const entityId = `${this.entity.slice(0, -1)}Id`;
       await Promise.all([
         db
           .update(this.table)
@@ -275,24 +279,26 @@ export class CreateRouteControllers {
               )
             )
           ),
-        ...(this.dependentEntities.map((depEntity) =>
-          db
-            .update(depEntity)
-            .set({ deleted_at: new Date(), deleted_by: userId })
-            .where(
-              and(
-                eq(
-                  // @ts-ignore
-                  depEntity[`${this.entity.slice(0, -1)}Id`],
-                  id
-                ),
-                ...CreateRouteControllers.commonWhereClause(
-                  depEntity,
-                  organizationId!
+        ...(this.dependentEntities
+          .filter((depEntity) =>
+            getTableColumns(depEntity).some(
+              (col: Column) => col.name === entityId
+            )
+          )
+          .map((depEntity) =>
+            db
+              .update(depEntity)
+              .set({ deleted_at: new Date(), deleted_by: userId })
+              .where(
+                and(
+                  eq(depEntity[entityId], id),
+                  ...CreateRouteControllers.commonWhereClause(
+                    depEntity,
+                    organizationId!
+                  )
                 )
               )
-            )
-        ) || []),
+          ) || []),
       ]);
       return c.body(null, HttpStatus.NO_CONTENT);
     };

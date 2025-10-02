@@ -1,7 +1,7 @@
 import { createRoute } from '@hono/zod-openapi';
 import { PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod';
-import z, { ZodObject } from 'zod';
+import z, { ZodNumber, ZodObject } from 'zod';
 
 import * as HttpStatus from '@/utils/consts/http-status-codes';
 import * as HttpPhrases from '@/utils/consts/http-status-phrases';
@@ -63,7 +63,7 @@ export class OpenAPIRouteConfig {
             ...options.tags,
           ])
         )
-      : [entity];
+      : [entity.charAt(0).toUpperCase() + entity.slice(1)];
     this.table = table;
     this.generateSchemas(options?.entitySchemas);
   }
@@ -75,7 +75,9 @@ export class OpenAPIRouteConfig {
   }) {
     const selectSchema =
       entitySchemas?.selectSchema ||
-      createSelectSchema(this.table).omit({
+      createSelectSchema(this.table, {
+        id: (schema: ZodNumber) => schema.min(1).openapi({ example: 43 }),
+      }).omit({
         ...OpenAPIRouteConfig.selectSchemaOmitColumns,
       });
     const insertSchema =

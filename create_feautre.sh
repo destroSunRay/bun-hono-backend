@@ -33,7 +33,7 @@ echo "\n\nexport * from \"@/features/$feature_name/$feature_name.model\";" >> sr
 echo "export * from \"@/features/$feature_name/$feature_name.relations\";" >> src/db/schema/index.ts
 
 
-// Add boilerplate code to model file
+# Add boilerplate code to model file
 echo "import { necessaryColumns } from '@/utils/db/commonColumns';
 import { boolean, pgTable, text } from 'drizzle-orm/pg-core';
 

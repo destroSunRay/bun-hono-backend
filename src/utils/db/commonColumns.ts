@@ -4,8 +4,6 @@ import {
   text,
   timestamp,
   pgTable,
-  PgTableWithColumns,
-  PgTable,
 } from "drizzle-orm/pg-core";
 import { user, organization } from "../../features/auth/auth.model";
 

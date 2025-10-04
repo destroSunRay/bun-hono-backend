@@ -1,15 +1,15 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
-import { cors } from "hono/cors";
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { cors } from 'hono/cors';
 
-import { defaultHook } from "@/utils/hono-zod-openapi/defaultHook";
-import type { AppBindings } from "@/utils/hono-zod-openapi/types";
-import requestLogger from "@/middleware/requestLogger";
-import onError from "@/middleware/errorHandler";
-import env from "@/config/env";
-import { requireAuth } from "@/middleware/requireAuth";
-import auth from "@/config/auth";
-import configOpenApi from "./configureOpenAPI";
-import routes from "@/utils/hono-zod-openapi/routes";
+import { defaultHook } from '@/utils/hono-zod-openapi/defaultHook';
+import type { AppBindings } from '@/utils/hono-zod-openapi/types';
+import requestLogger from '@/middleware/requestLogger';
+import onError from '@/middleware/errorHandler';
+import env from '@/config/env';
+import { requireAuth } from '@/middleware/requireAuth';
+import auth from '@/config/auth';
+import configOpenApi from './configureOpenAPI';
+import routes from '@/utils/hono-zod-openapi/routes';
 
 export function createRouter() {
   const router = new OpenAPIHono<AppBindings>({ strict: false, defaultHook });
@@ -31,15 +31,15 @@ export function createApp() {
   baseApp.use(requestLogger);
 
   // Set base path for the API
-  const app = baseApp.basePath("/api");
+  const app = baseApp.basePath('/api');
 
   // Health Check Route
-  app.get("/health", (c) => {
-    return c.json({ success: true, status: "OK" });
+  app.get('/health', (c) => {
+    return c.json({ success: true, status: 'OK' });
   });
 
   // Authentication Routes
-  app.on(["POST", "GET"], "/auth/*", (c) => {
+  app.on(['POST', 'GET'], '/auth/*', (c) => {
     return auth.handler(c.req.raw);
   });
 
@@ -48,7 +48,7 @@ export function createApp() {
 
   // Application Routes
   routes.forEach((route) => {
-    app.route("/", route);
+    app.route('/', route);
   });
 
   // Configure OpenAPI Routes
@@ -56,7 +56,7 @@ export function createApp() {
 
   // Not Found Handler
   app.notFound((c) => {
-    return c.json({ success: false, error: "Not Found" }, 404);
+    return c.json({ success: false, error: 'Not Found' }, 404);
   });
 
   // Global Error Handler

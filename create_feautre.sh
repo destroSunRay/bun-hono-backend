@@ -29,7 +29,7 @@ touch "$feature_path/$feature_name.services.ts"
 touch "$feature_path/$feature_name.tests.ts"
 
 # Add export to src/db/schema/index.ts
-echo "\n\nexport * from \"@/features/$feature_name/$feature_name.model\";" >> src/db/schema/index.ts
+echo "export * from \"@/features/$feature_name/$feature_name.model\";" >> src/db/schema/index.ts
 echo "export * from \"@/features/$feature_name/$feature_name.relations\";" >> src/db/schema/index.ts
 
 

@@ -31,11 +31,52 @@ A modern, full-featured web application built with Bun, Hono, and TypeScript fea
 
 ## 🛠️ Prerequisites
 
+### Option 1: Docker (Recommended)
+
+- [Docker](https://www.docker.com/get-started) and Docker Compose
+- Environment variables (see `.env.example`)
+
+### Option 2: Local Development
+
 - [Bun](https://bun.sh/) (latest version)
 - PostgreSQL database
 - Environment variables (see `.env.example`)
 
 ## 📦 Installation
+
+### Option 1: Docker Setup (Recommended)
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/destroSunRay/bun-hono-backend
+cd bun-app
+```
+
+1. Set up environment variables
+
+```bash
+cp .env.example .env
+# Edit .env with your configuration
+# Note: DATABASE_URL will be automatically configured for Docker
+```
+
+1. Start the application with Docker Compose
+
+```bash
+# Development mode with hot reload
+docker compose up -d --build
+
+# View logs
+docker compose logs -f
+
+# Stop the application
+docker compose down
+```
+
+The application will be available at `http://localhost:8000` and PostgreSQL at `localhost:5431`.
+
+### Option 2: Local Development Setup
 
 1. Clone the repository
 
@@ -69,15 +110,39 @@ bun run db:migrate
 
 ## 🚀 Getting Started
 
-### Development
+### Docker Development (Recommended)
 
 ```bash
-bun run dev
+# Start development environment with hot reload
+docker compose up -d --build
+
+# View application logs
+docker compose logs -f backend
+
+# View database logs
+docker compose logs -f db
+
+# Stop all services
+docker compose down
 ```
 
-### Production
+### Docker Production
 
 ```bash
+# Build and start production environment
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Stop production environment
+docker compose -f docker-compose.prod.yml down
+```
+
+### Local Development
+
+```bash
+# Development with hot reload
+bun run dev
+
+# Production
 bun run start
 ```
 
@@ -85,10 +150,27 @@ The server will start on `http://localhost:8000` (or your configured PORT).
 
 ## 📝 Available Scripts
 
+### Docker Scripts
+
+| Script                    | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `bun run docker:up`       | Start development environment with Docker      |
+| `bun run docker:logs`     | View Docker container logs                     |
+| `bun run docker:prod`     | Start production environment with Docker       |
+| `bun run docker:down`     | Stop Docker containers and remove images      |
+
+### Local Development Scripts
+
 | Script                         | Description                              |
 | ------------------------------ | ---------------------------------------- |
 | `bun run dev`                  | Start development server with hot reload |
 | `bun run start`                | Start production server                  |
+| `bun run test`                 | Run test suite                           |
+
+### Database Scripts
+
+| Script                         | Description                              |
+| ------------------------------ | ---------------------------------------- |
 | `bun run db:generate`          | Generate Drizzle migration files         |
 | `bun run db:migrate`           | Run database migrations                  |
 | `bun run db:push`              | Push schema changes to database          |
@@ -239,7 +321,71 @@ RESEND_API_KEY=your-resend-api-key
 LOG_LEVEL=info
 ```
 
-## 🗄️ Database Management
+## � Docker Configuration
+
+The project includes comprehensive Docker support with separate configurations for development and production.
+
+### Development Environment
+
+The development setup (`docker-compose.yml`) includes:
+
+- **Hot Reload**: Code changes are automatically reflected
+- **Volume Mounting**: Source code is mounted for live editing
+- **Database**: PostgreSQL 15 with health checks
+- **Automatic Migrations**: Database migrations run on startup
+- **Port Mapping**: App on `:8000`, Database on `:5431`
+
+### Production Environment
+
+The production setup (`docker-compose.prod.yml`) includes:
+
+- **Optimized Build**: Multi-stage Dockerfile with production target
+- **Environment Isolation**: Uses `.env.prod` for production variables
+- **Resource Optimization**: Minimal container footprint
+- **Production Database**: PostgreSQL with persistent volumes
+
+### Docker Commands
+
+```bash
+# Development
+docker compose up -d --build      # Start development environment
+docker compose logs -f            # Follow all logs
+docker compose logs -f backend     # Follow backend logs only
+docker compose exec backend bash  # Access backend container
+docker compose exec db psql -U postgres -d postgres  # Access database
+
+# Production
+docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml down
+
+# Cleanup
+docker compose down --rmi local    # Stop and remove images
+docker compose down -v             # Stop and remove volumes
+docker system prune -f             # Clean up Docker system
+```
+
+### Database Access
+
+When using Docker:
+
+- **Application Database URL**: `postgres://postgres:mypassword@bun_db:5432/postgres`
+- **External Database Access**: `postgres://postgres:mypassword@localhost:5431/postgres`
+- **Drizzle Studio**: Run `bun run db:studio` on host machine
+
+### Environment Variables for Docker
+
+Create `.env` for development and `.env.prod` for production:
+
+```bash
+# Docker automatically configures DATABASE_URL
+# Other variables remain the same
+NODE_ENV=development  # or production
+PORT=8000
+APPLICATION_URL=http://localhost:8000
+# ... other variables
+```
+
+## �🗄️ Database Management
 
 The project uses Drizzle ORM for type-safe database operations:
 
@@ -258,6 +404,24 @@ bun run db:push
 
 # Pull schema from existing database
 bun run db:pull
+```
+
+### Docker Database Operations
+
+When using Docker, database migrations are automatically run on container startup. For manual operations:
+
+```bash
+# Access database directly
+docker compose exec db psql -U postgres -d postgres
+
+# Run migrations manually in container
+docker compose exec backend bun run db:migrate
+
+# Generate migrations (run on host machine)
+bun run db:generate
+
+# Access Drizzle Studio (run on host machine)
+bun run db:studio
 ```
 
 ### Database Features

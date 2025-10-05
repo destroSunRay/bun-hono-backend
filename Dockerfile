@@ -40,4 +40,11 @@ COPY . .
 
 USER bun
 EXPOSE 8000/tcp
-CMD [ "bun", "run", "--hot", "src/index.ts" ]
+ENTRYPOINT [ "bun", "run", "--hot", "src/index.ts" ]
+
+FROM node:24-alpine AS debug
+WORKDIR /app
+COPY --from=dev-base /app/node_modules node_modules
+COPY . .
+
+ENTRYPOINT ["npx", "drizzle-kit", "migrate"]

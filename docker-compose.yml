@@ -1,4 +1,21 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: debug
+    container_name: bun_migrate
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://postgres:mypassword@bun_db:5432/postgres
+    depends_on:
+      db:
+        condition: service_healthy
+
   backend:
     build:
       context: .
@@ -14,14 +31,9 @@ services:
       - .env
     environment:
       - DATABASE_URL=postgres://postgres:mypassword@bun_db:5432/postgres
-    command: >
-      sh -c "
-        bun run db:migrate
-        bun run --hot src/index.ts
-      "
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   db:
     image: postgres:15
